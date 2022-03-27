@@ -23,13 +23,16 @@ Wuphf.configure do |config|
   end
 
   config.logger = Rails.logger # optional, defaults to stdout
-  config.debug = true # optional, enables debug logging
+  config.debug_mode = true # optional, enables debug logging
 end
 
-Wuphf.notify(:email,
-  body: "body",
-  subject: "subject",
-  from_email: "from-email@example.com",
-  to_email: "to-email@example.com",
+Wuphf.notify(
+  :email,
+  {
+    body: "body",
+    subject: "subject",
+    from_email: "from-email@example.com",
+    to_email: "to-email@example.com",
+  }
 )
 ```
