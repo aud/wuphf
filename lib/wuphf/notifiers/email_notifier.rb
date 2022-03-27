@@ -5,14 +5,48 @@ require "net/smtp"
 module Wuphf
   module Notifiers
     class EmailNotifier
-      Configuration = Struct.new(
-        :smtp_server,
-        :smtp_port,
-        :mail_from_domain,
-        :username,
-        :password,
-        keyword_init: true
-      )
+      class Configuration
+        attr_accessor(
+          :username,
+          :password,
+        )
+
+        attr_reader(:smtp_provider)
+
+        attr_writer(
+          :smtp_server,
+          :smtp_port,
+          :mail_from_domain,
+        )
+
+        UnsupportedProviderError = Class.new(StandardError)
+
+        def smtp_provider=(value)
+          raise UnsupportedProviderError, "currently only gmail is supported" unless value.to_sym == :gmail
+          @smtp_provider = value
+        end
+
+        def smtp_server
+          return "smtp.gmail.com" if smtp_provider_gmail?
+          @smtp_server
+        end
+
+        def mail_from_domain
+          return "gmail.com" if smtp_provider_gmail?
+          @mail_from_domain
+        end
+
+        def smtp_port
+          return 587 if smtp_provider_gmail?
+          @smtp_port
+        end
+
+        private
+
+        def smtp_provider_gmail?
+          smtp_provider == :gmail
+        end
+      end
 
       attr_reader(:configuration)
 
