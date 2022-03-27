@@ -17,6 +17,7 @@ module Wuphf
       attr_reader(:configuration)
 
       MissingOptionError = Class.new(ArgumentError)
+      SendMailError = Class.new(StandardError)
 
       def initialize(configuration)
         @configuration = configuration
@@ -34,14 +35,23 @@ module Wuphf
         end
 
         msg = "Subject: #{subject}\n\n#{body}"
-        smtp = Net::SMTP.new(configuration.smtp_server, configuration.smtp_port)
-        smtp.enable_starttls
-        smtp.start(configuration.mail_from_domain, configuration.username, configuration.password, :login) do
-          smtp.send_message(msg, from_email, to_email)
-        end
 
-        if Wuphf.configuration.debug_mode?
-          Wuphf.configuration.logger.debug("Mail sent")
+        begin
+          smtp = Net::SMTP.new(configuration.smtp_server, configuration.smtp_port)
+          smtp.enable_starttls
+          smtp.open_timeout = 5
+          smtp.read_timeout = 5
+
+          smtp.start(configuration.mail_from_domain, configuration.username, configuration.password, :login) do
+            result = smtp.send_message(msg, from_email, to_email)
+
+            if Wuphf.configuration.debug_mode?
+              Wuphf.configuration.logger.debug("Mail result: #{result.inspect}")
+              Wuphf.configuration.logger.debug("Mail sent")
+            end
+          end
+        rescue => err
+          raise SendMailError, "error establishing smtp connection. msg: #{err.message}"
         end
 
         true

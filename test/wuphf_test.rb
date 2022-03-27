@@ -49,6 +49,8 @@ class WuphfTest < Minitest::Test
 
     mock_smtp = mock("smtp")
     mock_smtp.expects(:enable_starttls)
+    mock_smtp.expects(:open_timeout=).with(5)
+    mock_smtp.expects(:read_timeout=).with(5)
     mock_smtp.expects(:send_message).with(
       "Subject: subject\n\nbody",
       "from-email@example.com",

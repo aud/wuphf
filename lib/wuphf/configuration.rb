@@ -26,12 +26,12 @@ module Wuphf
         raise InvalidConfigurationError, "#{notifier} has already been registered."
       end
 
+      if debug_mode?
+        logger.info("Registering #{notifier} notifier")
+      end
+
       case notifier
       when :email
-        if debug_mode?
-          logger.info("Registering #{notifier} notifier")
-        end
-
         config = Notifiers::EmailNotifier::Configuration.new
 
         yield(config)

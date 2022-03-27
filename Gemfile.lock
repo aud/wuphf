@@ -2,7 +2,6 @@ PATH
   remote: .
   specs:
     wuphf (0.1.0)
-      mocha
 
 GEM
   remote: https://rubygems.org/
@@ -16,6 +15,7 @@ PLATFORMS
 
 DEPENDENCIES
   minitest (~> 5.0)
+  mocha (= 1.13.0)
   rake (~> 13.0)
   wuphf!
 
