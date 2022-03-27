@@ -63,7 +63,7 @@ class WuphfTest < Minitest::Test
 
     Net::SMTP.expects(:new).with("example.com", 587).returns(mock_smtp)
 
-    Wuphf.notify(
+    assert(Wuphf.notify(
       :email,
       {
         body: "body",
@@ -71,6 +71,6 @@ class WuphfTest < Minitest::Test
         from_email: "from-email@example.com",
         to_email: "to-email@example.com",
       }
-    )
+    ))
   end
 end

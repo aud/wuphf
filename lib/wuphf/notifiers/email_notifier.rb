@@ -43,6 +43,8 @@ module Wuphf
         if Wuphf.configuration.debug_mode?
           Wuphf.configuration.logger.debug("Mail sent")
         end
+
+        true
       end
     end
   end
