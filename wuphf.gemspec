@@ -20,7 +20,8 @@ Gem::Specification.new do |spec|
 
   # Uncomment to register a new dependency of your gem
   # spec.add_dependency "pry-byebug"
-  spec.add_development_dependency "mocha", "1.13.0"
+  spec.add_dependency "twilio-ruby", "~> 5.66.0"
+  spec.add_development_dependency "mocha", "~> 1.13.0"
 
   # For more information and examples about making a new gem, checkout our
   # guide at: https://bundler.io/guides/creating_gem.html

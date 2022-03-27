@@ -2,6 +2,7 @@
 
 require "logger"
 require_relative "notifiers/email_notifier"
+require_relative "notifiers/twilio_sms_notifier"
 
 module Wuphf
   class Configuration
@@ -37,6 +38,12 @@ module Wuphf
         yield(config)
 
         @notifiers[notifier] = Notifiers::EmailNotifier.new(config)
+      when :twilio_sms
+        config = Notifiers::TwilioSmsNotifier::Configuration.new
+
+        yield(config)
+
+        @notifiers[notifier] = Notifiers::TwilioSmsNotifier.new(config)
       else
         raise InvalidConfigurationError, "#{notifier} is not a valid notifier."
       end

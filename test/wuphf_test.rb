@@ -11,19 +11,8 @@ class WuphfTest < Minitest::Test
     refute_nil(Wuphf::VERSION)
   end
 
-  def test_configuration
-    fake_logger = Logger.new(StringIO.new)
-
+  def test_debug
     Wuphf.configure do |config|
-      config.register_notifier(:email) do |email|
-        email.smtp_server = "smtp.gmail.com"
-        email.smtp_port = 587
-        email.mail_from_domain = "gmail.com"
-        email.username = "email@example.com"
-        email.password = "hunter2"
-      end
-
-      config.logger = fake_logger
       config.debug_mode = true
     end
 
@@ -130,6 +119,38 @@ class WuphfTest < Minitest::Test
         subject: "subject",
         from_email: "from-email@example.com",
         to_email: "to-email@example.com",
+      }
+    ))
+  end
+
+  def test_notify_with_twilio_sms
+    Wuphf.configure do |config|
+      config.register_notifier(:twilio_sms) do |email|
+        email.account_sid = "account sid"
+        email.auth_token = "auth token"
+      end
+    end
+
+    mock_client = mock("client")
+    mock_create = mock("create")
+    mock_create.expects(:create).with(
+      from: "+15551234567",
+      to: "+15555555555",
+      body: "body",
+    )
+    mock_client.expects(:messages).returns(mock_create)
+
+    Twilio::REST::Client.expects(:new).with(
+      "account sid",
+      "auth token",
+    ).returns(mock_client)
+
+    assert(Wuphf.notify(
+      :twilio_sms,
+      {
+        body: "body",
+        from_number: "+15551234567",
+        to_number: "+15555555555",
       }
     ))
   end
