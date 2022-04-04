@@ -18,13 +18,15 @@ require "wuphf"
 Wuphf.configure do |config|
   config.register_notifier(:email) do |email|
     # Custom SMTP server
+    email.smtp_provider = :custom
     email.smtp_server = "smtp.gmail.com"
     email.mail_from_domain = "gmail.com"
     email.smtp_port = 587
+    email.username = "email@example.com"
+    email.password = "hunter2"
 
-    # Or you can specify an optional provider (gmail only currently supported)
+    # Or you can specify a supported provider (gmail only currently supported)
     email.smtp_provider = :gmail
-
     email.username = "email@example.com"
     # If you're using the gmail provider and your account has 2fa enabled, you
     # will need to create a gmail app password.

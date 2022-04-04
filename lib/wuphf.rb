@@ -28,7 +28,7 @@ module Wuphf
       raise(
         UnknownNotifierError,
         "#{notifier.inspect} is not a registered notifier."
-      ) unless klass = configuration.notifiers[notifier]
+      ) unless klass = configuration.registration_manager.notifiers[notifier]
 
       klass.notify(**opts)
     end

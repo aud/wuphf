@@ -12,6 +12,7 @@ module Wuphf
       )
 
       MissingOptionError = Class.new(ArgumentError)
+      SendTwilioSmsError = Class.new(StandardError)
 
       attr_reader(:configuration)
 
@@ -24,17 +25,15 @@ module Wuphf
         raise MissingOptionError, "to_number" if to_number.nil?
         raise MissingOptionError, "body" if body.nil?
 
-        begin
-          twilio_client.messages.create(
-            from: from_number,
-            to: to_number,
-            body: body,
-          )
-        rescue => err
-          raise SendTwilioSmsError, "error sending sms. err: #{err.inspect}"
-        end
+        twilio_client.messages.create(
+          from: from_number,
+          to: to_number,
+          body: body,
+        )
 
         true
+      rescue => err
+        raise SendTwilioSmsError, "error sending sms. err: #{err.inspect}"
       end
 
       private

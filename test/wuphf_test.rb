@@ -26,7 +26,7 @@ class WuphfTest < Minitest::Test
   end
 
   def test_notify_with_email_and_unsupported_provider
-    assert_raises(Wuphf::Notifiers::EmailNotifier::Configuration::UnsupportedProviderError) do
+    assert_raises(Wuphf::Notifiers::EmailNotifier::UnsupportedProviderError) do
       Wuphf.configure do |config|
         config.register_notifier(:email) do |email|
           # email.smtp_server = "example.com"
@@ -86,6 +86,7 @@ class WuphfTest < Minitest::Test
   def test_notify_with_email
     Wuphf.configure do |config|
       config.register_notifier(:email) do |email|
+        email.smtp_provider = :custom
         email.smtp_server = "example.com"
         email.smtp_port = 587
         email.mail_from_domain = "mailfrom.example.com"

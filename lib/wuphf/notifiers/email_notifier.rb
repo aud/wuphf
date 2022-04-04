@@ -5,53 +5,49 @@ require "net/smtp"
 module Wuphf
   module Notifiers
     class EmailNotifier
-      class Configuration
-        attr_accessor(
-          :username,
-          :password,
-        )
+      UnsupportedProviderError = Class.new(StandardError)
 
-        attr_reader(:smtp_provider)
-
-        attr_writer(
-          :smtp_server,
-          :smtp_port,
-          :mail_from_domain,
-        )
-
-        UnsupportedProviderError = Class.new(StandardError)
-
-        def smtp_provider=(value)
-          raise UnsupportedProviderError, "currently only gmail is supported" unless value.to_sym == :gmail
-          @smtp_provider = value
-        end
-
-        def smtp_server
-          return "smtp.gmail.com" if smtp_provider_gmail?
-          @smtp_server
-        end
-
-        def mail_from_domain
-          return "gmail.com" if smtp_provider_gmail?
-          @mail_from_domain
-        end
-
-        def smtp_port
-          return 587 if smtp_provider_gmail?
-          @smtp_port
-        end
-
-        private
-
-        def smtp_provider_gmail?
-          smtp_provider == :gmail
+      class ConfigurationBuilder
+        def self.build_from(configuration)
+          case configuration.smtp_provider
+          when :gmail
+            GmailConfiguration
+          when :custom
+            DefaultConfiguration
+          else
+            raise UnsupportedProviderError
+          end.new(**configuration.to_h)
         end
       end
 
-      attr_reader(:configuration)
+      DefaultConfiguration = Struct.new(
+        :username,
+        :password,
+        :smtp_provider,
+        :smtp_server,
+        :smtp_port,
+        :mail_from_domain,
+        keyword_init: true,
+      )
+
+      class GmailConfiguration < DefaultConfiguration
+        def smtp_server
+          "smtp.gmail.com"
+        end
+
+        def mail_from_domain
+          "gmail.com"
+        end
+
+        def smtp_port
+          587
+        end
+      end
 
       MissingOptionError = Class.new(ArgumentError)
       SendMailError = Class.new(StandardError)
+
+      attr_reader(:configuration)
 
       def initialize(configuration)
         @configuration = configuration
@@ -70,25 +66,23 @@ module Wuphf
 
         msg = "Subject: #{subject}\n\n#{body}"
 
-        begin
-          smtp = Net::SMTP.new(configuration.smtp_server, configuration.smtp_port)
-          smtp.enable_starttls
-          smtp.open_timeout = 5
-          smtp.read_timeout = 5
+        smtp = Net::SMTP.new(configuration.smtp_server, configuration.smtp_port)
+        smtp.enable_starttls
+        smtp.open_timeout = 5
+        smtp.read_timeout = 5
 
-          smtp.start(configuration.mail_from_domain, configuration.username, configuration.password, :login) do
-            result = smtp.send_message(msg, from_email, to_email)
+        smtp.start(configuration.mail_from_domain, configuration.username, configuration.password, :login) do
+          result = smtp.send_message(msg, from_email, to_email)
 
-            if Wuphf.configuration.debug_mode?
-              Wuphf.configuration.logger.debug("Mail result: #{result.inspect}")
-              Wuphf.configuration.logger.debug("Mail sent")
-            end
+          if Wuphf.configuration.debug_mode?
+            Wuphf.configuration.logger.debug("Mail result: #{result.inspect}")
+            Wuphf.configuration.logger.debug("Mail sent")
           end
-        rescue => err
-          raise SendMailError, "error establishing smtp connection. msg: #{err.message}"
         end
 
         true
+      rescue => err
+        raise SendMailError, "error establishing smtp connection. msg: #{err.message}"
       end
     end
   end
